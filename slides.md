@@ -2,102 +2,169 @@
 title: Stand der Holding Ontology für Bestandsdaten
 date: 5.6.2014
 author: Carsten Klee, Jakob Voß
-location: Bibliothekstag Bremen, DINI-KIM
-institution: ZDB & VZG
+place: DINI-KIM-Workshop auf dem Bibliothekstag Bremen
+institute: Zeitschriftendatenbank (ZDB) & Verbundzentrale des GBV (VZG)
 ...
 
 # Hintergrund 
 
 ## Motivation
 
-* Viele bibliographische Daten, wenige Bestandsdaten
-* AG seit April 2013\
-  <http://wiki.dnb.de/x/johZB>
-* Diskussion auf Englisch
-* Geringe Beteiligung
+**Ziel:** einheitliche RDF-Repräsentation von Bestandsdaten
 
-## Verwandt Standards
+* Viele bibliographische RDF-Daten, wenig Bestandsangaben
+* DINI-KIM AG Bestandsdaten seit April 2013
+    * [Wiki-Seite](http://wiki.dnb.de/x/johZB) im DNB-Wiki
+    * [Mailingliste](http://lists.dnb.de/mailman/listinfo/dini-ag-kim-bestandsdaten)
+    * [GitHub-Repository](https://github.com/dini-ag-kim/holding-ontology) & Issue-Tracker
+    * Diskussion auf Englisch
+    * Geringe Beteiligung
 
-* ISO 20775
-* ISO 18626 Interlibrary Loan Transactions,
-* Holdings Statements for Bibliographic Items
-* Z39.71-2006
-* MARC21 Holdings
-* ZETA
-* ...
+## Statt das Rad neu zu erfinden
 
-## Verwandte Ontologien
+Standards
+  : ISO 20775 Schema for holdings information, ISO 18626 Interlibrary Loan Transactions,
+    Z39.71-2006 Holdings Statements for Bibliographic Items, MARC21 Holdings, ZETA
 
-* Bibliographic Ontology
-* BIBFRAME
-* RDA
-* FRBR
-* FOAF
-* Dublin Core
-* GoodRelations
-* Schema.org
+    *\ $\Longrightarrow$ typische Attribute von Bestandsdaten*
 
-Im Rahmen von Holdings Ontology (weiter)entwickelt
-* DAIA
-* ECPO
-* DSO
-* Service Ontology
+Ontologien
+  : BIBFRAME (`bf`), Bibliographic Ontology (`bibo`),
+    DCMI Metadata Terms (`dct`), FOAF (`foaf`), FRBR (`frbr`),
+    GoodRelations (`gr`), RDA (`rda_`), Schema.org (`schema`)...
+
+    *\ $\Longrightarrow$ vorhandener RDF-Ressourcen*
+
+## Verwandte Mikro-Ontologien
+
+(Weiter)entwickelt im Rahmen der Holdings Ontology
+
+DAIA
+  : Document Availability Information API\
+    *Verfügbarkeit von Diensten an Dokumenten/Exemplaren*
+
+DSO
+  : Document Service Ontology\
+    *Dienste an Dokumenten/Exemplaren*\
+    *(Ausleihe, Präsenzansicht, Fernleihe..)*
+
+ECPO
+  : Enumeration and Chronology of Periodicals Ontology\
+    *Erscheinungs- und Besitzverläufe von Reihen*\
+    *(Anfang/Ende, Jahrgänge, Ausgaben, Lücken...)*
 
 # Ergebnis
 
 ---
 
-*Keep it simple and open*
+Holding Ontology (aktuell Version 0.1.3)\
+<http://purl.org/ontology/holding>
+
+*Keep it simple and open!*
 
 ## Drei Entitäten
 
 Dokument
-  : Alles was als Dokument gesammelt und beschrieben werden kann
-    (`bibo:Document`, `foaf:Document`, `bf:Work`, `bf:Instance`, `schema:CreativeWork`)
+  : Alles was sich sammeln & beschreiben lässt\
+    `bibo:Document`, `foaf:Document`, `bf:Work`, `bf:Instance`, `schema:CreativeWork`
 Item
-  : Exemplar oder Kopie eines Dokuments
-    (`frbr:Item`, `bf:HeldItem`, `rdac:Item`)
+  : Exemplar oder Kopie eines Dokuments\
+    `frbr:Item`, `bf:HeldItem`, `rdac:Item`
 Agent
-  : Bibliothek, Informationseinrichtung, Privatsammler...
-    (`bf:Agent`, `foaf:Agent`, `schema:Organization` , `schema:Person`, `rdac:Agent`)
+  : Bibliothek, Informationseinrichtung, Sammler...\
+    `bf:Agent`, `foaf:Agent`, `schema:Organization` , `schema:Person`, `rdac:Agent`
 
 *Item und Document sind nicht disjunkt!*
 
-## Relations & Properties
+## Exemplar-, Bestands- und Sammlungsbeziehungen
 
-...
+~~~ {.ditaa .dpi=180 .no-shadows}
+       +------------+      collectedBy
+       |  Document  |--------------------------+
+       |            |<-----------------------+ |
+       +------------+      collects          | v
+            ^ |                          +---------+
+ exemplarOf | | exemplar                 |  Agent  |
+            | v                          +---------+
+        +--------+         holds             | ^
+        |  Item  |<--------------------------+ |
+        |        |-----------------------------+
+        +--------+         heldBy
+~~~
 
-## Weitere Holding-Informationen
+## Exemplarbeziehungen zu Über- und Untergeordneten Teilen
 
-* Erscheinungs- und Besitzverläufe
+~~~ {.ditaa .dpi=180 .no-shadows} 
+     +--------+      exemplar      +------------+
+     |  Item  |<-------------------|  Document  |
+     |        |------------------->|            |
+     +--------+     exemplarOf     +------------+
+        | ^                                  |
+        | |                                  |
+        | |       broaderExemplar            |
+        | +-----------------------------+    | dct:hasPart
+        +-----------------------------+ |    |
+                 broaderExemplarOf    | |    | 
+                                      | |    |
+                                      v |    v
+     +--------+      exemplar      +------------+
+     |  Item  |<-------------------|  Document  |
+     |        |------------------->|            |
+     +--------+     exemplarOf     +------------+
+                                      | ^    |
+                                      | |    |
+                 narrowerExemplar     | |    | 
+        +-----------------------------+ |    | dct:hasPart
+        | +-----------------------------+    |
+        | |     narrowerExemplarOf           | 
+        | |                                  |
+        v |                                  v
+     +--------+      exemplar      +------------+
+     |  Item  |<-------------------|  Document  |
+     |        |------------------->|            |
+     +--------+     exemplarOf     +------------+
+~~~
 
-    * bsp. Bibliothek (Agent) hat eine Zeitschrift (Document) im Bestand (holds
-      Item), allerdings nur einen bestimmten Verlauf
+## Weitere Klassen aus verwandten Ontologien
 
-* Dienstleistungen
+~~~ {.neato .dpi=170}
+strict graph {
+  node[shape=rect]
 
-    * bspw. Ausleihbar
+  Document[pos="0,1!",style=bold];
+  Item[pos="0,0!",style=bold];
+  Agent[pos="2,1!",style=bold];
 
-* Orte und Signatur
+  Service[pos="2,0!"];
+  Location[pos="2,-1!"];
+  Chronology[pos="0,-1!"];
+  Offer[pos="4,0!"];
 
-    * Wo befindet sich das Exemplar?
-    * Welche Signatur hat es?
+  Item -- Document; 
+  Item -- Chronology;
+  Item -- Agent;
+  Item -- Service;
+  Document -- Agent;
+  Service -- Agent;
+  Item -- Location;
+  Service -- Location;
 
-## Nutzen
+  Service -- Offer[style=dotted];
+  Agent -- Offer[style=dotted];
+  Location -- Offer[style=dotted];
+}
+~~~
 
-* Theoretisch können alle wesentlichen Informationen in Holding Ontology
-  ausgedrückt und abgefragt werden (siehe Vortrag zu HO auf der SWIB13)
-  <http://de.slideshare.net/nichtich/swib13-holdings-kleevoss>
-
-* Praktisch nützt das wenig solange keine Daten vorhanden sind.
+Abgedeckt durch: ECPO, Schema.org, Bibframe, DSO... 
 
 ## Stand der Entwicklung
 
-* Weiter Offene Details
-* Keine Abschließenden Empfehlungen
-* Erstmal eigene Daten publizieren, dann evaluieren
-
-* <https://github.com/dini-ag-kim/holding-ontology>
-* <http://purl.org/ontology/holding>
-* Mailingliste
+* Alle wesentlichen Bestandsinformationen können ausgedrückt und abgefragt werden
+* Einige Details sind noch offen
+* Keine abschließenden Empfehlungen
+    * Bibframe, RDA, Schema.org
+    * Evaluation durch echte Daten notwendig
+* Weitere Informationen
+    * <http://wiki.dnb.de/x/johZB>
+    * <http://purl.org/ontology/holding>
 
